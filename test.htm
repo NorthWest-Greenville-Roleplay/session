@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Status</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #4a90e2, #f5a623);
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: none; /* Hide the content initially */
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-bottom: 40px;
+            font-size: 28px;
+            color: #333;
+        }
+
+        .channel {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+
+        .channel h2 {
+            margin: 0 0 10px;
+            font-size: 22px;
+            color: #333;
+        }
+
+        .channel p {
+            margin: 0 0 20px;
+            font-size: 16px;
+            color: #666;
+        }
+
+        .channel button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .email-section {
+            display: block; /* Show the verification section initially */
+            text-align: center;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+
+        .email-section input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .email-section button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .email-section button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-section" id="verificationSection">
+        <h2>Verification Required</h2>
+        <input type="text" id="codeInput" placeholder="Enter code or Gmail">
+        <button onclick="verifyAccess()">Verify Access</button>
+        <div class="status" id="statusMessage"></div>
+    </div>
+
+    <div class="container" id="mainContent">
+        <h1>Session Status</h1>
+        
+        <div class="channel">
+            <h2>Channel 1</h2>
+            <p id="channel1Status">There is no session in Channel 1 at the moment.</p>
+            <button id="channel1Btn" onclick="toggleSession(1)" disabled>Start Session in Channel 1</button>
+        </div>
+
+        <div class="channel">
+            <h2>Channel 2</h2>
+            <p id="channel2Status">There is no session in Channel 2 at the moment.</p>
+            <button id="channel2Btn" onclick="toggleSession(2)" disabled>Start Session in Channel 2</button>
+        </div>
+
+        <div class="channel">
+            <h2>Channel 3</h2>
+            <p id="channel3Status">There is no session in Channel 3 at the moment.</p>
+            <button id="channel3Btn" onclick="toggleSession(3)" disabled>Start Session in Channel 3</button>
+        </div>
+    </div>
+
+    <script>
+        const allowedGmail = 'yousefabua80@gmail.com'; // Replace with the allowed Gmail
+        let isViewer = false;
+
+        window.onload = function() {
+            // Force users to verify every time by clearing session storage
+            sessionStorage.clear();
+
+            // Load the session statuses from localStorage
+            loadSessionStatus();
+        };
+
+        function toggleSession(channel) {
+            const statusElement = document.getElementById(`channel${channel}Status`);
+            const buttonElement = document.getElementById(`channel${channel}Btn`);
+            if (statusElement.innerText.includes('no session')) {
+                statusElement.innerText = `There is a session in Channel ${channel}.`;
+                buttonElement.innerText = `End Session in Channel ${channel}`;
+                localStorage.setItem(`channel${channel}Status`, 'active');
+            } else {
+                statusElement.innerText = `There is no session in Channel ${channel} at the moment.`;
+                buttonElement.innerText = `Start Session in Channel ${channel}`;
+                localStorage.setItem(`channel${channel}Status`, 'inactive');
+            }
+        }
+
+        function loadSessionStatus() {
+            for (let channel = 1; channel <= 3; channel++) {
+                const status = localStorage.getItem(`channel${channel}Status`);
+                const statusElement = document.getElementById(`channel${channel}Status`);
+                const buttonElement = document.getElementById(`channel${channel}Btn`);
+                if (status === 'active') {
+                    statusElement.innerText = `There is a session in Channel ${channel}.`;
+                    buttonElement.innerText = `End Session in Channel ${channel}`;
+                } else {
+                    statusElement.innerText = `There is no session in Channel ${channel} at the moment.`;
+                    buttonElement.innerText = `Start Session in Channel ${channel}`;
+                }
+            }
+        }
+
+        function verifyAccess() {
+            const codeInput = document.getElementById('codeInput').value.toLowerCase();
+            if (codeInput === '17') {
+                isViewer = true;
+                document.getElementById('statusMessage').innerText = 'Access granted as viewer. You cannot start sessions.';
+                showContent();
+            } else if (codeInput === allowedGmail) {
+                sessionStorage.setItem('accessStatus', 'admin');
+                document.getElementById('statusMessage').innerText = 'Access granted! You can now start sessions.';
+                enableButtons();
+                showContent();
+            } else {
+                document.getElementById('statusMessage').innerText = 'Invalid code or Gmail!';
+            }
+        }
+
+        function enableButtons() {
+            document.getElementById('channel1Btn').disabled = false;
+            document.getElementById('channel2Btn').disabled = false;
+            document.getElementById('channel3Btn').disabled = false;
+        }
+
+        function showContent() {
+            document.getElementById('verificationSection').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
